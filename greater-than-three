@@ -1,0 +1,120 @@
+#Python program
+#import data analysis packages
+import numpy as np
+import pandas as pd
+import datetime as dt
+
+## Load data from Excel file into pandas dataframe
+#file name and location redacted for privacy
+#filepath would be a string identifying the Excel file location
+file = filepath
+data = pd.ExcelFile(file)
+#put the data into a dataframe, parse date entries
+df = pd.read_excel(data, parse_dates = True)
+#replace any empty cells with "Missing"
+df = df.fillna("Missing")
+#print column names
+print(df.columns)
+
+## Make a list of participating restaurants
+#j = number of rows
+j = df.shape[0]
+#rest = empty list for restaurant names
+rest = []
+#add the first restaurant name to the list
+rest.append(df.at[0,df.columns[2]])
+#bool new name
+new = True
+#go through all entries in the dataframe and look for unique restaurant names
+for r in range(1,j):
+    #rname = restaurant name, string
+    rname = df.at[r,df.columns[2]]
+    #loop through all items in rest
+    for l in range(0,len(rest)):
+        #if there is a matching entry, set new to False
+        if rname == rest[l]:
+            new = False
+    #if the entry is not in the list, add it to the list
+    if new == True:
+        rest.append(rname)
+    #reassign the value of True to the variable new
+    new = True      
+#print the number of restaurants
+rnum = len(rest)
+print("There are " + str(rnum ) + "restaurants.")
+
+## Find restaurants that completed three or more assessments
+## Unique assessments are defined by their completion date
+#bool new date
+new_date = True
+#empty date list to hold unique entries
+date_list = []
+#total number of assessments completed
+assess_total = 0
+#prev will be assigned the number of assessments completed before the desired timeframe
+prev = 0
+#rcount will be the number of restaurants that completed three or more assessments
+rcount = 0
+#go through the unique list of restaurants
+for r in range(0,rnum):
+    #rname = the restaurant name for this iteration of the loop
+    rname = rest[r]
+    #set the number of unique assessments to 0
+    assess_count = 0
+    #empty the date list
+    date_list = []
+
+    #identify rname in df restaurant column (2) in the dataframe
+    for i in range(0,j):
+        #assume that the next date will be True
+        new_date = True
+        #find an entry of the restaurant name
+        if rname == df.at[i,df.columns[2]]:
+            #assign the corresponding date to the date variable
+            date = df.at[i,df.columns[20]]
+            #if the date is not Missing
+            if date != "Missing":
+                #if the assess_count == 0, this is the first record of the restaurant
+                if assess_count == 0:
+                    #add this date to the date_list
+                    date_list.append(date)
+                    #increase the date count by 1
+                    assess_count += 1
+                #if there is at least one date, this is another record of the restaurant
+                if assess_count >= 1:
+                    #loop through the list of dates
+                    for k in range(0,len(date_list)):
+                        #if the date is the same, the entry is a different menu item for the same date
+                        if date == date_list[k]:
+                            #assign False to new_date
+                            new_date = False
+                #if the date is new, it is a different assessment
+                if new_date == True:
+                    #add the date to the date_list
+                    date_list.append(date)
+                    #increase the assessment count by 1
+                    assess_count += 1
+
+    #if the number of assessments is greater than or equal to 3
+    if assess_count >= 3:
+        #increase the number of total assessments (to be used for other calculations)
+        assess_total += assess_count
+        #increase the number of restaurants with 3 or more assessments
+        rcount += 1
+        #print the restaurant name and their number of assessments
+        print(str(rname) + ": " + str(assess_count))
+
+    #search for assessment dates before 2017
+    for d in range(0,len(date_list)):
+        #if the year component of the datetime object is less than 2017, increase the prev count
+        if date_list[d].timetuple().tm_year < 2017:
+                prev += 1
+    #assign True to new_date to reset for the next restaurant
+    new_date = True
+
+#print the number of assessments completed 
+print("Total number of assessments: " + str(assess_total))
+#print the number of assessments taken before 2017
+print("Assessments prior to 2017: " + str(prev))
+#print the total number of restaurants with 3 or more assessments
+print("Total number of restaurants with three or more assessments: " + str(rcount))

@@ -41,7 +41,7 @@ for r in range(1,j):
     new = True      
 #print the number of restaurants
 rnum = len(rest)
-print("There are " + str(rnum ) + "restaurants.")
+print("There are " + str(rnum) + " restaurants.")
 
 ## Find restaurants that completed three or more assessments
 ## Unique assessments are defined by their completion date
